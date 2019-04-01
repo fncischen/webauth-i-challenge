@@ -41,6 +41,7 @@ server.post("/api/login", (req,res) => {
         user => {
             if(user && bcrypt.compareSync(password, user.password)) 
             {
+                res.header.authorization = 
                 res.status(200).json({message: `Welcome ${user}`})
             }
             else {
@@ -58,8 +59,8 @@ server.post("/api/login", (req,res) => {
 // https://flaviocopes.com/express-headers/
 server.get("/api/users", restricted,(req,res) => {
     Users.get()
-         .then( users => res.status(200).json())
-         .catch() 
+         .then( users => res.status(200).json(users))
+         .catch(error => res.status(500).json({errorMessage: "We could not retrieve user data."}) ) 
 })
 
 function restricted(req, res, next) {
@@ -78,10 +79,10 @@ function restricted(req, res, next) {
         }   
     })
     .catch( error => {
-        res.status(500).json({errorMessage: "There was an error in registering your user."})
+        res.status(500).json({errorMessage: "There was an error in accessing the restricted area."})
     })
     }
     else {
-        res.status(401).json({})
+        res.status(500).json({errorMessage: "There was an error in making the server request."})
     }
 }
