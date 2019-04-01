@@ -1,14 +1,12 @@
 const bcrypt = require("bcryptjs");
-const express = require("express");
-const server = express();
+const router = require("express").Router();
 
 const Users = require("../data/users/usersDataModel.js");
 
 // https://cloud.google.com/blog/products/gcp/12-best-practices-for-user-account
 // https://medium.com/@paulrohan/how-bcryptjs-works-90ef4cb85bf4
-server.use(express.json());
 
-server.post("/api/register", (req,res) => {
+router.post("/register", (req,res) => {
     const user = req.body;
     const hash = bcrypt.hashSync(user.password, 14);
 
@@ -26,7 +24,7 @@ server.post("/api/register", (req,res) => {
 
 })
 
-server.post("/api/login", (req,res) => {
+router.post("/login", (req,res) => {
 
     let {username, password} = req.body;
     // or let {username, password} = req.body
@@ -57,7 +55,7 @@ server.post("/api/login", (req,res) => {
 
 // restrict access to this endpoint to users that only provide the right credentials in the headers
 // https://flaviocopes.com/express-headers/
-server.get("/api/users", restricted,(req,res) => {
+router.get("/users", restricted,(req,res) => {
     Users.get()
          .then( users => res.status(200).json(users))
          .catch(error => res.status(500).json({errorMessage: "We could not retrieve user data."}) ) 
@@ -86,3 +84,5 @@ function restricted(req, res, next) {
         res.status(500).json({errorMessage: "There was an error in making the server request."})
     }
 }
+
+module.exports = router; 
