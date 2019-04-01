@@ -32,6 +32,10 @@ server.post("/api/login", (req,res) => {
     // or let {username, password} = req.body
     const hash = bcrypt.hashSync(user.password, 14);
 
+    let user = {
+        "username": username,
+        "password": hash
+    }
 
     Users.findBy({ user }).first().then(
         user => {
@@ -70,13 +74,12 @@ function restricted(req, res, next) {
             next();
         }
         else{
-            res.status(200).json()
+            return res.status(401).json({message: "This area is restricted to registered users!"})
         }   
     })
     .catch( error => {
-
-    }
-    )
+        res.status(500).json({errorMessage: "There was an error in registering your user."})
+    })
     }
     else {
         res.status(401).json({})
