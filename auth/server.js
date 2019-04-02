@@ -1,17 +1,20 @@
 const bcrypt = require("bcryptjs");
 const router = require("express").Router();
 
+
 const Users = require("../data/users/usersDataModel.js");
 
 // https://cloud.google.com/blog/products/gcp/12-best-practices-for-user-account
 // https://medium.com/@paulrohan/how-bcryptjs-works-90ef4cb85bf4
 
 router.post("/register", (req,res) => {
+    console.log(req.body + " at line 10");
+    console.log("Trying to register!");
     const user = req.body;
     const hash = bcrypt.hashSync(user.password, 14);
 
     // use hash to override the password
-    credentials.password = hash;
+    user.password = hash;
 
     // questions about hash 
     Users.add(user)
@@ -28,19 +31,21 @@ router.post("/login", (req,res) => {
 
     let {username, password} = req.body;
     // or let {username, password} = req.body
-    const hash = bcrypt.hashSync(user.password, 14);
+    const hash = bcrypt.hashSync(password, 14);
 
     let user = {
         "username": username,
         "password": hash
     }
 
-    Users.findBy({ user }).first().then(
-        user => {
-            if(user && bcrypt.compareSync(password, user.password)) 
+    Users.findBy(user).first().then(
+        a_user => {
+            console.log("User password: " + user.password);
+            console.log("Retrieved database password " + a_user.password);
+            if(user && bcrypt.compareSync(user.password, a_user.password)) 
             {
                 res.header.authorization = 
-                res.status(200).json({message: `Welcome ${user}`})
+                res.status(200).json({message: `Welcome ${a_user}`})
             }
             else {
                 res.status(401).json({message: 'Invalid Credentials'});
@@ -48,7 +53,7 @@ router.post("/login", (req,res) => {
         }
     )
     .catch(error => {
-        res.status(500).json(error)
+        res.status(500).json({errorMessage: "We had trouble retrieving the user you wanted."})
     })
     
 })

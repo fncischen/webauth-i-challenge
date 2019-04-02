@@ -12,7 +12,7 @@ function add(user) {
 
 function findBy(user){
     return db("users")
-    .where({"username": user.username, "password": user.password })
+    .where({"username": user.username})
 }
 
 function get() {
