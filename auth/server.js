@@ -44,7 +44,6 @@ router.post("/login", (req,res) => {
             console.log("Retrieved database password " + a_user.password);
             if(user && bcrypt.compareSync(user.password, a_user.password)) 
             {
-                res.header.authorization = 
                 res.status(200).json({message: `Welcome ${a_user}`})
             }
             else {
