@@ -3,23 +3,31 @@ const server = express();
 
 const userServer = require("./auth/server.js");
 const session = require('express-session');
-
+var KnexSessionStore = require('connect-session-knex')(session);
 
 // place in development environment through server
 const serverConfig = {
-    name: "", 
-    secret: "",
+    name: "notsession", 
+    secret: "Gives us access to users",
     cookie: {
-        maxAge: ,
+        maxAge: 1 * 24 * 60 * 60 * 5,
         secure: true,
+        httpOnly: true, 
     },
     httpOnly: true, 
-    reSave: false,
-    saveUnitialized: false, 
+    resave: false,
+    saveUnitialized: false,
+    store: new KnexSessionStore({
+         knex: require('./data/dbConfig.js'),
+         tablename: "sessions",
+         sidfieldname: "sid",
+         createtable: true
+        }) 
 }
+// this sessionConfig is stored in server
 
 server.use(express.json());
-server.use()
+server.use(session(serverConfig));
 server.use("/api", userServer); 
 
 

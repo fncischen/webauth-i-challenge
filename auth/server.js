@@ -6,6 +6,7 @@ const Users = require("../data/users/usersDataModel.js");
 
 // https://cloud.google.com/blog/products/gcp/12-best-practices-for-user-account
 // https://medium.com/@paulrohan/how-bcryptjs-works-90ef4cb85bf4
+// https://github.com/knownasilya/connect-session-knex
 
 router.post("/register", (req,res) => {
     console.log(req.body + " at line 10");
@@ -31,25 +32,26 @@ router.post("/login", (req,res) => {
 
     let {username, password} = req.body;
     // or let {username, password} = req.body
-    const hash = bcrypt.hashSync(password, 14);
+     
 
-    let user = {
-        "username": username,
-        "password": hash
-    }
+    Users.findBy({username}).first().then(
 
-    Users.findBy(user).first().then(
         a_user => {
-            console.log("User password: " + user.password);
-            console.log("Retrieved database password " + a_user.password);
-            if(user && bcrypt.compareSync(user.password, a_user.password)) 
+            console.log("User " +  a_user);
+
+            if(a_user && bcrypt.compareSync(password, a_user.password)) 
             {
-                res.status(200).json({message: `Welcome ${a_user}`})
+
+                req.session.user =  a_user.username;
+                // return a cookie 
+                res.send({message: "We've logged in."});
             }
             else {
                 res.status(401).json({message: 'Invalid Credentials'});
             }
+
         }
+        
     )
     .catch(error => {
         res.status(500).json({errorMessage: "We had trouble retrieving the user you wanted."})
@@ -66,24 +68,25 @@ router.get("/users", restricted,(req,res) => {
 })
 
 function restricted(req, res, next) {
-    const {username, password} = req.headers;
-
-    if (username && password) {
-
-    Users.findBy({username})
-    .first()
-    .then(user => {
-        if(username && bcrypt.compareSync(password,user.password)){
-            next();
-        }
-        else{
-            return res.status(401).json({message: "This area is restricted to registered users!"})
-        }   
-    })
-    .catch( error => {
-        res.status(500).json({errorMessage: "There was an error in accessing the restricted area."})
-    })
+    console.log(req.session);
+    if (req.session && req.session.user)
+    // if (username && password) {
+    {
+        next();
+    // Users.findBy({username})
+    // .first()
+    // .then(user => {
+    //     if(username && bcrypt.compareSync(password,user.password)){
+    //         next();
+    //     }
+    //     else{
+    //         return res.status(401).json({message: "This area is restricted to registered users!"})
+    //     }   
     }
+    // .catch( error => {
+    //     res.status(500).json({errorMessage: "There was an error in accessing the restricted area."})
+    // })
+    // }
     else {
         res.status(500).json({errorMessage: "There was an error in making the server request."})
     }
